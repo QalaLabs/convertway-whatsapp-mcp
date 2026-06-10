@@ -7,8 +7,9 @@ export const config = {
     licenseKey: process.env.CONVERTWAY_LICENSE_KEY || "",
   },
   server: {
-    transport: (process.env.MCP_TRANSPORT || "stdio") as "stdio" | "sse",
-    webhookPort: parseInt(process.env.WEBHOOK_PORT || "3000", 10),
+    transport: (process.env.MCP_TRANSPORT || "stdio") as "stdio" | "http",
+    port: parseInt(process.env.MCP_PORT || process.env.WEBHOOK_PORT || "3000", 10),
+    mcpPath: process.env.MCP_PATH || "/mcp",
     webhookPath: process.env.WEBHOOK_PATH || "/webhooks/convertway",
   },
   smtp: {

@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 export interface ToolResult {
   content: Array<{ type: "text"; text: string; isError?: boolean }>;
@@ -43,7 +43,7 @@ export const tools: ToolDefinition[] = [
   {
     name: "list_templates_by_module",
     description: "List all templates for a specific module",
-    schema: { module: { describe: "Module name (e.g. shipment, payment, support, alerts, b2b, escalation)" } as unknown as z.ZodType },
+    schema: { module: z.string().describe("Module name (e.g. shipment, payment, support, alerts, b2b, escalation)") },
     handler: async (args) => {
       const module = args.module as string;
       const tmpls = getTemplatesByModule(module);
@@ -63,7 +63,7 @@ export const tools: ToolDefinition[] = [
   {
     name: "list_all_templates",
     description: "List all available message templates across all modules and channels",
-    schema: { channel: { describe: "Filter by channel: whatsapp, sms, or email" } as unknown as z.ZodType },
+    schema: { channel: z.string().describe("Filter by channel: whatsapp, sms, or email") },
     handler: async (args) => {
       const channel = args.channel as string | undefined;
       const allTemplates = channel
