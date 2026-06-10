@@ -1,0 +1,39 @@
+{
+  "name": "convertway-whatsapp-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for WhatsApp Business API via Convertway by Unicommerce — omnichannel communication layer",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "convertway-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "watch": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.21.0",
+    "zod": "^3.24.0",
+    "dotenv": "^16.4.0",
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "mcp",
+    "whatsapp",
+    "convertway",
+    "unicommerce",
+    "omnichannel",
+    "whatsapp-business-api",
+    "sms",
+    "email"
+  ]
+}
