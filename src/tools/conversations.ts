@@ -9,7 +9,7 @@ export const logConversationSchema = {
   content: z.string().describe("Message content"),
   status: z.enum(["queued", "sent", "delivered", "read", "failed"]).describe("Message delivery status"),
   messageId: z.string().optional().describe("Provider message ID for cross-referencing"),
-  metadata: z.record(z.unknown()).optional().describe("Additional metadata (tags, campaign name, etc.)"),
+  metadata: z.record(z.string(), z.unknown()).optional().describe("Additional metadata (tags, campaign name, etc.)"),
 };
 
 export const logConversation: ToolDefinition = {

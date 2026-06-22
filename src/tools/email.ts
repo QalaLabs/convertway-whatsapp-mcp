@@ -10,7 +10,7 @@ export const sendEmailSchema = {
   cc: z.array(z.string().email()).optional().describe("CC recipients"),
   bcc: z.array(z.string().email()).optional().describe("BCC recipients"),
   templateId: z.string().optional().describe("Template ID for pre-formatted emails (e.g. mis_daily_report)"),
-  templateParams: z.record(z.string()).optional().describe("Template variable values"),
+  templateParams: z.record(z.string(), z.string()).optional().describe("Template variable values"),
 };
 
 export const sendEmail: ToolDefinition = {

@@ -8,7 +8,7 @@ export const sendWhatsAppSchema = {
   to: z.string().describe("Recipient phone number with country code (e.g. +919876543210)"),
   message: z.string().optional().describe("Text message content"),
   templateId: z.string().optional().describe("Template ID from the template library"),
-  templateParams: z.record(z.string()).optional().describe("Template variable values as key-value pairs"),
+  templateParams: z.record(z.string(), z.string()).optional().describe("Template variable values as key-value pairs"),
   mediaUrl: z.string().url().optional().describe("URL of media to send (image/video/document)"),
   mediaType: z.enum(["image", "document", "video"]).optional().describe("Type of media being sent"),
 };
