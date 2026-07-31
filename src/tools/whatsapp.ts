@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { convertway } from "../convertway/client.js";
+import { whatsapp } from "../whatsapp/client.js";
 import { store } from "../storage/conversations.js";
 import { templates, render, getTemplate } from "../templates/index.js";
 import type { ToolDefinition } from "./index.js";
@@ -15,7 +15,7 @@ export const sendWhatsAppSchema = {
 
 export const sendWhatsApp: ToolDefinition = {
   name: "send_whatsapp",
-  description: "Send a WhatsApp message via Convertway — supports text, templates, and media messages",
+  description: "Send a WhatsApp message directly via Meta's WhatsApp Cloud API — supports text, templates, and media messages",
   schema: sendWhatsAppSchema,
   handler: async (args) => {
     const to = args.to as string;
@@ -41,8 +41,7 @@ export const sendWhatsApp: ToolDefinition = {
       templateName = tmpl.whatsappTemplateName;
     }
 
-    const result = await convertway.sendMessage({
-      channel: "whatsapp",
+    const result = await whatsapp.sendMessage({
       to,
       content,
       templateName,

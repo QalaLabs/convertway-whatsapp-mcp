@@ -36,9 +36,9 @@ function registerTools(server: McpServer): void {
 
 export async function createServer(): Promise<McpServer> {
   const server = new McpServer({
-    name: "Convertway WhatsApp MCP",
+    name: "WhatsApp Business API MCP",
     version: "1.0.0",
-    description: "MCP Server for WhatsApp Business API via Convertway by Unicommerce — omnichannel communication layer supporting WhatsApp, SMS, and Email",
+    description: "MCP Server for WhatsApp Business API directly connecting to Meta's Cloud API",
   });
 
   registerTools(server);
@@ -48,7 +48,7 @@ export async function createServer(): Promise<McpServer> {
 export async function startStdioServer(): Promise<void> {
   const server = await createServer();
   const transport = new StdioServerTransport();
-  console.error("[Convertway MCP] Starting server in stdio mode...");
+  console.error("[WhatsApp MCP] Starting server in stdio mode...");
   await server.connect(transport);
 }
 
@@ -65,7 +65,7 @@ export async function startHttpServer(): Promise<void> {
 
   app.all(config.server.mcpPath, (req, res) => {
     transport.handleRequest(req, res, req.body).catch((err) => {
-      console.error("[Convertway MCP] MCP transport error:", err);
+      console.error("[WhatsApp MCP] MCP transport error:", err);
       if (!res.headersSent) {
         res.status(500).json({ error: "Internal server error" });
       }
@@ -76,9 +76,9 @@ export async function startHttpServer(): Promise<void> {
 
   const port = config.server.port;
   app.listen(port, () => {
-    console.error(`[Convertway MCP] HTTP server listening on port ${port}`);
-    console.error(`[Convertway MCP] MCP endpoint: http://localhost:${port}${config.server.mcpPath}`);
-    console.error(`[Convertway MCP] Webhook endpoint: POST http://localhost:${port}${config.server.webhookPath}`);
-    console.error(`[Convertway MCP] Health check: GET http://localhost:${port}/health`);
+    console.error(`[WhatsApp MCP] HTTP server listening on port ${port}`);
+    console.error(`[WhatsApp MCP] MCP endpoint: http://localhost:${port}${config.server.mcpPath}`);
+    console.error(`[WhatsApp MCP] Webhook endpoint: POST http://localhost:${port}${config.server.webhookPath}`);
+    console.error(`[WhatsApp MCP] Health check: GET http://localhost:${port}/health`);
   });
 }

@@ -8,18 +8,20 @@ export function createWebhookRouter(): express.Router {
   router.post(config.server.webhookPath, (req, res) => {
     try {
       const payload = req.body;
-      console.log(`[Webhook] Received event: ${payload.event || "unknown"}`);
-
-      switch (payload.event) {
-        case "message_received":
-          processInboundWebhook(payload.data as Record<string, unknown>);
-          break;
-        case "delivery_status":
-          console.log(`[Webhook] Delivery status: ${JSON.stringify(payload.data)}`);
-          break;
-        default:
-          console.log(`[Webhook] Unhandled event: ${JSON.stringify(payload).substring(0, 200)}`);
+      
+      const entry = payload.entry?.[0];
+      const change = entry?.changes?.[0];
+      const value = change?.value;
+      
+      if (value?.messages?.[0]) {
+        console.error(`[Webhook] Received message event: ${value.messages[0].id}`);
+      } else if (value?.statuses?.[0]) {
+        console.error(`[Webhook] Received status update event: ${value.statuses[0].id} (${value.statuses[0].status})`);
+      } else {
+        console.error(`[Webhook] Received other webhook payload field: ${change?.field || "unknown"}`);
       }
+
+      processInboundWebhook(payload);
 
       res.status(200).json({ status: "ok" });
     } catch (err) {
@@ -33,16 +35,17 @@ export function createWebhookRouter(): express.Router {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    if (mode === "subscribe" && token === "convertway_verify_token") {
-      console.log("[Webhook] Verified webhook subscription");
+    if (mode === "subscribe" && token === config.whatsapp.verifyToken) {
+      console.error("[Webhook] Verified webhook subscription with Meta");
       res.status(200).send(challenge);
     } else {
+      console.warn(`[Webhook] Verification failed. Expected verify token: ${config.whatsapp.verifyToken}, received: ${token}`);
       res.status(403).json({ error: "Verification failed" });
     }
   });
 
   router.get("/health", (_req, res) => {
-    res.status(200).json({ status: "healthy", service: "convertway-mcp", timestamp: new Date().toISOString() });
+    res.status(200).json({ status: "healthy", service: "whatsapp-mcp", timestamp: new Date().toISOString() });
   });
 
   return router;

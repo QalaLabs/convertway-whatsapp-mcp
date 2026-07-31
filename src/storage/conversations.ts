@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { dirname } from "path";
 import { config } from "../config.js";
-import type { ConversationLog } from "../convertway/types.js";
+import type { ConversationLog } from "../whatsapp/types.js";
 import type { ConversationStore } from "./types.js";
 
 export class FileConversationStore implements ConversationStore {

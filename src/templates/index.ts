@@ -1,10 +1,9 @@
 export interface MessageTemplate {
   id: string;
   module: string;
-  channel: "whatsapp" | "sms" | "email";
+  channel: "whatsapp";
   name: string;
   whatsappTemplateName?: string;
-  subject?: string;
   body: string;
   variables: string[];
   description: string;
@@ -12,7 +11,6 @@ export interface MessageTemplate {
 
 export interface RenderedMessage {
   content: string;
-  subject?: string;
 }
 
 function renderTemplate(template: string, params: Record<string, string>): string {
@@ -22,7 +20,6 @@ function renderTemplate(template: string, params: Record<string, string>): strin
 export function render(template: MessageTemplate, params: Record<string, string>): RenderedMessage {
   return {
     content: renderTemplate(template.body, params),
-    subject: template.subject ? renderTemplate(template.subject, params) : undefined,
   };
 }
 
@@ -88,16 +85,6 @@ export const templates: MessageTemplate[] = [
     description: "Sent when payment is overdue",
   },
   {
-    id: "mis_daily_report",
-    module: "mis",
-    channel: "email",
-    name: "MIS Daily Report",
-    subject: "📊 Daily MIS Report — {{report_date}}",
-    body: "<h2>Daily MIS Report</h2><p><strong>Date:</strong> {{report_date}}</p><table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;width:100%'><tr><th>Metric</th><th>Value</th></tr><tr><td>Total Orders</td><td>{{total_orders}}</td></tr><tr><td>Revenue</td><td>₹{{revenue}}</td></tr><tr><td>Shipments</td><td>{{total_shipments}}</td></tr><tr><td>Delivered</td><td>{{delivered}}</td></tr><tr><td>In Transit</td><td>{{in_transit}}</td></tr><tr><td>Returns</td><td>{{returns}}</td></tr><tr><td>Pending Payments</td><td>{{pending_payments}}</td></tr><tr><td>Support Tickets</td><td>{{support_tickets}}</td></tr></table><p><a href='{{dashboard_link}}'>View Full Dashboard →</a></p>",
-    variables: ["report_date", "total_orders", "revenue", "total_shipments", "delivered", "in_transit", "returns", "pending_payments", "support_tickets", "dashboard_link"],
-    description: "Daily MIS report sent to stakeholders via email",
-  },
-  {
     id: "support_ai_reply_whatsapp",
     module: "support",
     channel: "whatsapp",
@@ -106,16 +93,6 @@ export const templates: MessageTemplate[] = [
     body: "👋 *Hi {{customer_name}}!*\n\nThank you for reaching out. Here's what I found:\n\n{{ai_response}}\n\n📌 *Ticket ID:* {{ticket_id}}\n\nIf you need more help, just reply to this message and I'll assist you right away!",
     variables: ["customer_name", "ai_response", "ticket_id"],
     description: "AI-generated support reply sent via WhatsApp",
-  },
-  {
-    id: "support_ai_reply_email",
-    module: "support",
-    channel: "email",
-    name: "Support Reply — {{ticket_id}}",
-    subject: "Re: Support Request #{{ticket_id}}",
-    body: "<p>Hi {{customer_name}},</p><p>{{ai_response}}</p><br><p><strong>Ticket ID:</strong> {{ticket_id}}</p><p><strong>Status:</strong> {{ticket_status}}</p><br><hr><p><small>This is an AI-assisted response. Reply to this email to continue the conversation.</small></p>",
-    variables: ["customer_name", "ai_response", "ticket_id", "ticket_status"],
-    description: "AI-generated support reply sent via email",
   },
   {
     id: "price_alert",
@@ -133,7 +110,7 @@ export const templates: MessageTemplate[] = [
     channel: "whatsapp",
     name: "b2b_follow_up",
     whatsappTemplateName: "b2b_follow_up",
-    body: "🤝 *Follow-up*\n\nHi {{contact_name}},\n\nThis is a follow-up regarding {{deal_description}}.\n\n📅 Last contact: {{last_contact_date}}\n📋 Status: {{deal_status}}\n\nWould you like to schedule a call or discuss further?\n\nReply YES to connect with our team.",
+    body: "📋 *B2B Follow-up*\n\nHi {{contact_name}},\n\nThis is a follow-up regarding {{deal_description}}.\n\n📅 Last contact: {{last_contact_date}}\n📋 Status: {{deal_status}}\n\nWould you like to schedule a call or discuss further?\n\nReply YES to connect with our team.",
     variables: ["contact_name", "deal_description", "last_contact_date", "deal_status"],
     description: "B2B sales follow-up reminder",
   },
@@ -146,15 +123,6 @@ export const templates: MessageTemplate[] = [
     body: "🚨 *Escalation Alert*\n\n⚠️ Ticket #{{ticket_id}} has been escalated.\n\n👤 Customer: {{customer_name}}\n⏱️ Open since: {{opened_at}}\n📋 Issue: {{issue_summary}}\n📌 Priority: {{priority}}\n\n👉 Assigned to: {{assigned_to}}\n🔗 View: {{dashboard_link}}",
     variables: ["ticket_id", "customer_name", "opened_at", "issue_summary", "priority", "assigned_to", "dashboard_link"],
     description: "Alert sent when a support ticket is escalated",
-  },
-  {
-    id: "escalation_alert_sms",
-    module: "escalation",
-    channel: "sms",
-    name: "Escalation Alert SMS",
-    body: "ALERT: Ticket #{{ticket_id}} escalated ({{priority}}). Customer: {{customer_name}}. Issue: {{issue_summary}}. View: {{dashboard_link}}",
-    variables: ["ticket_id", "priority", "customer_name", "issue_summary", "dashboard_link"],
-    description: "SMS alert for critical ticket escalations",
   },
   {
     id: "abandoned_cart",
@@ -186,7 +154,7 @@ export function getTemplatesByModule(module: string): MessageTemplate[] {
   return templates.filter((t) => t.module === module);
 }
 
-export function getTemplatesByChannel(channel: "whatsapp" | "sms" | "email"): MessageTemplate[] {
+export function getTemplatesByChannel(channel: "whatsapp"): MessageTemplate[] {
   return templates.filter((t) => t.channel === channel);
 }
 

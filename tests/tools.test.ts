@@ -1,14 +1,13 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { tools } from "../src/tools/index.js";
-import { convertway } from "../src/convertway/client.js";
+import { whatsapp } from "../src/whatsapp/client.js";
 import { store } from "../src/storage/conversations.js";
 import fs from "fs";
 
-vi.mock("../src/convertway/client.js", () => {
+vi.mock("../src/whatsapp/client.js", () => {
   return {
-    convertway: {
+    whatsapp: {
       sendMessage: vi.fn(),
-      checkDeliveryStatus: vi.fn(),
     },
   };
 });
@@ -37,10 +36,9 @@ describe("MCP Tool Handlers", () => {
   describe("send_whatsapp", () => {
     it("should send a text message successfully", async () => {
       const tool = getTool("send_whatsapp");
-      vi.mocked(convertway.sendMessage).mockResolvedValue({
+      vi.mocked(whatsapp.sendMessage).mockResolvedValue({
         success: true,
         messageId: "msg_123",
-        channel: "whatsapp",
         status: "sent",
         timestamp: new Date().toISOString(),
         providerResponse: {},
@@ -53,9 +51,8 @@ describe("MCP Tool Handlers", () => {
 
       expect(result.isError).toBeFalsy();
       expect(result.content[0].text).toContain("sent successfully");
-      expect(convertway.sendMessage).toHaveBeenCalledWith(
+      expect(whatsapp.sendMessage).toHaveBeenCalledWith(
         expect.objectContaining({
-          channel: "whatsapp",
           to: "+919876543210",
           content: "Hello world",
         })
@@ -65,10 +62,9 @@ describe("MCP Tool Handlers", () => {
 
     it("should send using a template ID successfully", async () => {
       const tool = getTool("send_whatsapp");
-      vi.mocked(convertway.sendMessage).mockResolvedValue({
+      vi.mocked(whatsapp.sendMessage).mockResolvedValue({
         success: true,
         messageId: "msg_template",
-        channel: "whatsapp",
         status: "sent",
         timestamp: new Date().toISOString(),
         providerResponse: {},
@@ -84,9 +80,8 @@ describe("MCP Tool Handlers", () => {
       });
 
       expect(result.isError).toBeFalsy();
-      expect(convertway.sendMessage).toHaveBeenCalledWith(
+      expect(whatsapp.sendMessage).toHaveBeenCalledWith(
         expect.objectContaining({
-          channel: "whatsapp",
           templateName: "order_confirmation",
           templateParams: {
             customer_name: "Alice",
@@ -105,15 +100,14 @@ describe("MCP Tool Handlers", () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("not found");
-      expect(convertway.sendMessage).not.toHaveBeenCalled();
+      expect(whatsapp.sendMessage).not.toHaveBeenCalled();
     });
 
-    it("should handle Convertway API sending errors gracefully", async () => {
+    it("should handle WhatsApp API sending errors gracefully", async () => {
       const tool = getTool("send_whatsapp");
-      vi.mocked(convertway.sendMessage).mockResolvedValue({
+      vi.mocked(whatsapp.sendMessage).mockResolvedValue({
         success: false,
         messageId: "failed_123",
-        channel: "whatsapp",
         status: "failed",
         timestamp: new Date().toISOString(),
         providerResponse: { error: "Invalid API credentials" },
@@ -129,95 +123,38 @@ describe("MCP Tool Handlers", () => {
     });
   });
 
-  describe("send_sms", () => {
-    it("should send SMS successfully", async () => {
-      const tool = getTool("send_sms");
-      vi.mocked(convertway.sendMessage).mockResolvedValue({
-        success: true,
-        messageId: "sms_123",
-        channel: "sms",
-        status: "sent",
-        timestamp: new Date().toISOString(),
-        providerResponse: {},
-      });
-
-      const result = await tool.handler({
-        to: "+919876543210",
-        message: "Short text message",
-      });
-
-      expect(result.isError).toBeFalsy();
-      expect(result.content[0].text).toContain("SMS sent successfully");
-      expect(convertway.sendMessage).toHaveBeenCalledWith({
-        channel: "sms",
-        to: "+919876543210",
-        content: "Short text message",
-        senderId: undefined,
-      });
-    });
-  });
-
-  describe("send_email", () => {
-    it("should send email successfully", async () => {
-      const tool = getTool("send_email");
-      vi.mocked(convertway.sendMessage).mockResolvedValue({
-        success: true,
-        messageId: "email_123",
-        channel: "email",
-        status: "sent",
-        timestamp: new Date().toISOString(),
-        providerResponse: {},
-      });
-
-      const result = await tool.handler({
-        to: "bob@example.com",
-        subject: "Test Subject",
-        body: "Hello Bob",
-      });
-
-      expect(result.isError).toBeFalsy();
-      expect(result.content[0].text).toContain("Email sent successfully");
-      expect(convertway.sendMessage).toHaveBeenCalledWith({
-        channel: "email",
-        to: "bob@example.com",
-        content: "Hello Bob",
-        subject: "Test Subject",
-        cc: undefined,
-        bcc: undefined,
-      });
-    });
-  });
-
   describe("get_delivery_status", () => {
-    it("should fetch and update status successfully", async () => {
+    it("should fetch status from store successfully", async () => {
       const tool = getTool("get_delivery_status");
       
-      // Setup a local entry
       store.add({
         id: "conv_111",
         customerId: "+919876543210",
         channel: "whatsapp",
         direction: "outbound",
         content: "Test status update",
-        status: "sent",
-        messageId: "msg_update",
-        timestamp: new Date().toISOString(),
-      });
-
-      vi.mocked(convertway.checkDeliveryStatus).mockResolvedValue({
-        messageId: "msg_update",
-        channel: "whatsapp",
         status: "delivered",
+        messageId: "msg_update",
         timestamp: new Date().toISOString(),
       });
 
       const result = await tool.handler({
         messageId: "msg_update",
-        channel: "whatsapp",
       });
 
+      expect(result.isError).toBeFalsy();
       expect(result.content[0].text).toContain("Status: delivered");
       expect(store.getByMessageId("msg_update")?.status).toBe("delivered");
+    });
+
+    it("should return error if message ID not found in store", async () => {
+      const tool = getTool("get_delivery_status");
+      const result = await tool.handler({
+        messageId: "unknown_id",
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("not found");
     });
   });
 
@@ -293,9 +230,18 @@ describe("MCP Tool Handlers", () => {
 
     it("should list all templates", async () => {
       const tool = getTool("list_all_templates");
-      const result = await tool.handler({ channel: "whatsapp" });
+      const result = await tool.handler({});
 
       expect(result.content[0].text).toContain("Total templates:");
+    });
+  });
+
+  describe("WhatsAppClient sanitization", () => {
+    it("should sanitize phone numbers to digits only", async () => {
+      const { WhatsAppClient } = await vi.importActual<any>("../src/whatsapp/client.js");
+      const client = new WhatsAppClient();
+      const payload = client["buildPayload"]({ to: "+91 98765-43210", content: "Test" });
+      expect(payload.to).toBe("919876543210");
     });
   });
 });

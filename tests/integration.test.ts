@@ -27,7 +27,8 @@ describe("MCP Server Integration Tests", () => {
       env: {
         ...process.env,
         CONVERSATIONS_DB_PATH: testDbPath,
-        CONVERTWAY_LICENSE_KEY: "test_key_integration",
+        WHATSAPP_ACCESS_TOKEN: "test_access_token",
+        WHATSAPP_PHONE_NUMBER_ID: "test_phone_number_id",
         MCP_TRANSPORT: "stdio",
         DOTENV_LOG_LEVEL: "none",
       },
@@ -60,8 +61,8 @@ describe("MCP Server Integration Tests", () => {
 
     const toolNames = response.tools.map((t) => t.name);
     expect(toolNames).toContain("send_whatsapp");
-    expect(toolNames).toContain("send_sms");
-    expect(toolNames).toContain("send_email");
+    expect(toolNames).not.toContain("send_sms");
+    expect(toolNames).not.toContain("send_email");
     expect(toolNames).toContain("list_template_modules");
 
     const callResponse = await client.callTool({ name: "list_template_modules" });

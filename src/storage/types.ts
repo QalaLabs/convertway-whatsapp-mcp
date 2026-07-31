@@ -1,4 +1,4 @@
-import type { ConversationLog } from "../convertway/types.js";
+import type { ConversationLog } from "../whatsapp/types.js";
 
 export interface ConversationStore {
   getAll(): ConversationLog[];

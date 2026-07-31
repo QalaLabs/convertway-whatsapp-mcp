@@ -3,8 +3,8 @@ import { store } from "../storage/conversations.js";
 import type { ToolDefinition } from "./index.js";
 
 export const logConversationSchema = {
-  customerId: z.string().describe("Customer identifier (phone number, email, or user ID)"),
-  channel: z.enum(["whatsapp", "sms", "email"]).describe("Communication channel used"),
+  customerId: z.string().describe("Customer identifier (phone number or user ID)"),
+  channel: z.enum(["whatsapp"]).describe("Communication channel used (always whatsapp)"),
   direction: z.enum(["outbound", "inbound"]).describe("Direction of the message"),
   content: z.string().describe("Message content"),
   status: z.enum(["queued", "sent", "delivered", "read", "failed"]).describe("Message delivery status"),
@@ -20,7 +20,7 @@ export const logConversation: ToolDefinition = {
     const entry = {
       id: `conv_${Date.now()}`,
       customerId: args.customerId as string,
-      channel: args.channel as "whatsapp" | "sms" | "email",
+      channel: "whatsapp" as const,
       direction: args.direction as "outbound" | "inbound",
       content: args.content as string,
       status: args.status as "queued" | "sent" | "delivered" | "read" | "failed",
@@ -34,7 +34,7 @@ export const logConversation: ToolDefinition = {
     return {
       content: [{
         type: "text",
-        text: `Conversation logged successfully.\nID: ${entry.id}\nCustomer: ${entry.customerId}\nChannel: ${entry.channel}\nDirection: ${entry.direction}`,
+        text: `Conversation logged successfully.\nID: ${entry.id}\nCustomer: ${entry.customerId}\nChannel: whatsapp\nDirection: ${entry.direction}`,
       }],
     };
   },
@@ -47,7 +47,7 @@ export const getConversationHistorySchema = {
 
 export const getConversationHistory: ToolDefinition = {
   name: "get_conversation_history",
-  description: "Retrieve conversation history for a customer across all channels",
+  description: "Retrieve conversation history for a customer",
   schema: getConversationHistorySchema,
   handler: async (args) => {
     const customerId = args.customerId as string;
@@ -63,7 +63,7 @@ export const getConversationHistory: ToolDefinition = {
 
     const lines = history.map(
       (entry) =>
-        `[${entry.timestamp}] ${entry.direction.toUpperCase()} | ${entry.channel} | ${entry.status}\n  ${entry.content.substring(0, 200)}${entry.content.length > 200 ? "..." : ""}`
+        `[${entry.timestamp}] ${entry.direction.toUpperCase()} | ${entry.status}\n  ${entry.content.substring(0, 200)}${entry.content.length > 200 ? "..." : ""}`
     );
 
     return {

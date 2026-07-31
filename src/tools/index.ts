@@ -13,8 +13,6 @@ export interface ToolDefinition {
 }
 
 import { sendWhatsApp, getWhatsAppTemplates } from "./whatsapp.js";
-import { sendSms } from "./sms.js";
-import { sendEmail } from "./email.js";
 import { getDeliveryStatus } from "./delivery.js";
 import { logConversation, getConversationHistory } from "./conversations.js";
 import { receiveInbound } from "../webhooks/handler.js";
@@ -23,8 +21,6 @@ import { listModules, getTemplatesByChannel, getTemplatesByModule, templates } f
 export const tools: ToolDefinition[] = [
   sendWhatsApp,
   getWhatsAppTemplates,
-  sendSms,
-  sendEmail,
   getDeliveryStatus,
   logConversation,
   getConversationHistory,
@@ -62,13 +58,10 @@ export const tools: ToolDefinition[] = [
   },
   {
     name: "list_all_templates",
-    description: "List all available message templates across all modules and channels",
-    schema: { channel: z.string().describe("Filter by channel: whatsapp, sms, or email") },
-    handler: async (args) => {
-      const channel = args.channel as string | undefined;
-      const allTemplates = channel
-        ? getTemplatesByChannel(channel as "whatsapp" | "sms" | "email")
-        : templates;
+    description: "List all available message templates across all modules",
+    schema: {},
+    handler: async () => {
+      const allTemplates = templates;
       const count = allTemplates.length;
       return {
         content: [{ type: "text", text: `Total templates: ${count}\nUse list_template_modules and list_templates_by_module for detailed view.` }],

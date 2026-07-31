@@ -1,4 +1,3 @@
-export type Channel = "whatsapp" | "sms" | "email";
 export type MessageDirection = "outbound" | "inbound";
 export type MessageStatus =
   | "queued"
@@ -8,24 +7,18 @@ export type MessageStatus =
   | "failed"
   | "clicked";
 
-export interface SendMessageRequest {
-  channel: Channel;
+export interface SendWhatsAppRequest {
   to: string;
   content: string;
   templateName?: string;
   templateParams?: Record<string, string>;
   mediaUrl?: string;
   mediaType?: "image" | "document" | "video";
-  subject?: string;
-  senderId?: string;
-  cc?: string[];
-  bcc?: string[];
 }
 
-export interface SendMessageResponse {
+export interface SendWhatsAppResponse {
   success: boolean;
   messageId: string;
-  channel: Channel;
   status: MessageStatus;
   timestamp: string;
   providerResponse?: Record<string, unknown>;
@@ -33,7 +26,6 @@ export interface SendMessageResponse {
 
 export interface InboundMessage {
   id: string;
-  channel: Channel;
   from: string;
   to: string;
   content: string;
@@ -45,7 +37,6 @@ export interface InboundMessage {
 
 export interface DeliveryStatusCallback {
   messageId: string;
-  channel: Channel;
   status: MessageStatus;
   timestamp: string;
   error?: string;
@@ -54,17 +45,11 @@ export interface DeliveryStatusCallback {
 export interface ConversationLog {
   id: string;
   customerId: string;
-  channel: Channel;
+  channel: "whatsapp";
   direction: MessageDirection;
   content: string;
   status: MessageStatus;
   messageId?: string;
   timestamp: string;
   metadata?: Record<string, unknown>;
-}
-
-export interface WebhookPayload {
-  event: "message_received" | "delivery_status" | "template_status";
-  data: Record<string, unknown>;
-  timestamp: string;
 }
